@@ -28,8 +28,6 @@ import android.widget.Toast
 import org.json.JSONArray
 import org.json.JSONObject
 
-// ------------------------------------------------------------------ styling
-
 object P {
     val ink = Color.parseColor("#0E1118")
     val raised = Color.parseColor("#181D29")
@@ -52,8 +50,6 @@ fun View.rounded(color: Int, radius: Int) {
     }
 }
 
-// ------------------------------------------------------------------ storage
-
 data class Entry(val code: String, val name: String, val number: String)
 
 object Store {
@@ -69,7 +65,6 @@ object Store {
                 out.add(Entry(o.getString("code"), o.getString("name"), o.getString("number")))
             }
         } catch (e: Exception) {
-            // Corrupt data: start clean rather than crash on launch.
         }
         out.sortBy { it.code.toLongOrNull() ?: Long.MAX_VALUE }
         return out
@@ -89,9 +84,9 @@ object Store {
     private fun p(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 }
 
-// ------------------------------------------------------------------ dialer
-
 class MainActivity : Activity() {
+
+    private val IDLE_DELAY = 3000L
 
     private var code = ""
     private var items = mutableListOf<Entry>()
@@ -222,9 +217,6 @@ class MainActivity : Activity() {
 
     private fun match(): Entry? = items.firstOrNull { it.code == code }
 
-    /** True if a longer code also starts with what's typed, so we must not auto-dial yet. */
-    private fun ambiguous(): Boolean = items.any { it.code != code && it.code.startsWith(code) }
-
     private fun refresh() {
         cancelPending()
         codeView.text = if (code.isEmpty()) "\u2014" else code
@@ -236,9 +228,9 @@ class MainActivity : Activity() {
             nameView.setTextColor(P.text)
             numberView.text = hit.number
             enableCall(true)
-            if (Store.auto(this) && !ambiguous()) {
+            if (Store.auto(this)) {
                 pending = Runnable { placeCall() }
-                handler.postDelayed(pending!!, 700)
+                handler.postDelayed(pending!!, IDLE_DELAY)
             }
         } else {
             nameView.text = if (code.isEmpty()) "" else "No contact on this code"
@@ -289,8 +281,6 @@ class MainActivity : Activity() {
         }
     }
 }
-
-// ------------------------------------------------------------------ contacts
 
 class ContactsActivity : Activity() {
 
@@ -451,7 +441,7 @@ class ContactsActivity : Activity() {
             Toast.makeText(this, "Add a name and a number", Toast.LENGTH_SHORT).show(); return
         }
 
-        items.removeAll { it.code == code }   // saving the same code overwrites it
+        items.removeAll { it.code == code }
         items.add(Entry(code, name, number))
         items.sortBy { it.code.toLongOrNull() ?: Long.MAX_VALUE }
         Store.save(this, items)
