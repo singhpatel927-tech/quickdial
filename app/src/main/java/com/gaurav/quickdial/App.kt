@@ -86,7 +86,7 @@ object Store {
 
 class MainActivity : Activity() {
 
-    private val IDLE_DELAY = 3000L
+    private val IDLE_DELAY = 2000L
 
     private var code = ""
     private var items = mutableListOf<Entry>()
