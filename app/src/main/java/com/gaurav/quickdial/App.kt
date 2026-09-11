@@ -47,22 +47,23 @@ fun View.rounded(color: Int, radius: Int) {
 /* ------------------------------------------------------------------ */
 
 object P {
-    val ink = Color.parseColor("#0E1118")
-    val raised = Color.parseColor("#181D29")
-    val line = Color.parseColor("#252C3B")
-    val text = Color.parseColor("#EAEDF4")
-    val muted = Color.parseColor("#79839B")
-    val signal = Color.parseColor("#F0A93B")
-    val call = Color.parseColor("#2E9E63")
-    val off = Color.parseColor("#4A5266")
+    // ---- light theme ----------------------------------------------
+    val ink = Color.parseColor("#F3F5F9")      // screen background
+    val raised = Color.parseColor("#FFFFFF")   // tiles, fields
+    val line = Color.parseColor("#D5DBE6")     // dividers, inactive dot
+    val text = Color.parseColor("#111722")     // primary text
+    val muted = Color.parseColor("#6B7488")    // secondary text
+    val signal = Color.parseColor("#E08312")   // accent / selected tile
+    val call = Color.parseColor("#1E9E5A")     // call button
+    val off = Color.parseColor("#A8B0C0")      // disabled
+    val sunken = Color.parseColor("#E6EAF2")   // empty slots, disabled button
 
     // ---- tile look -------------------------------------------------
-    // Dark tiles (matches the rest of the app).
     val tileBg = raised
     val tileInk = text
-    // For WHITE tiles like the mock-up, swap the two lines above for:
-    // val tileBg = Color.parseColor("#FFFFFF")
-    // val tileInk = Color.parseColor("#101010")
+    // For a dark pad on the light screen, use:
+    // val tileBg = Color.parseColor("#1B2230")
+    // val tileInk = Color.parseColor("#F2F4F8")
 }
 
 /* ------------------------------------------------------------------ */
@@ -372,7 +373,7 @@ class MainActivity : Activity() {
         clear.textSize = 20f
         clear.gravity = Gravity.CENTER
         clear.setTextColor(P.muted)
-        clear.rounded(P.raised, 18)
+        clear.rounded(P.sunken, 18)
         clear.isClickable = true
         clear.setOnClickListener {
             selected = null
@@ -467,7 +468,7 @@ class MainActivity : Activity() {
             when {
                 entry == null -> {
                     tile.setTextColor(P.off)
-                    tile.rounded(P.raised, 16)
+                    tile.rounded(P.sunken, 16)
                 }
                 entry.number.isBlank() -> {
                     tile.setTextColor(P.muted)
@@ -504,7 +505,7 @@ class MainActivity : Activity() {
 
     private fun enableCall(on: Boolean) {
         callButton.isEnabled = on
-        callButton.rounded(if (on) P.call else P.raised, 18)
+        callButton.rounded(if (on) P.call else P.sunken, 18)
         callButton.setTextColor(if (on) Color.WHITE else P.off)
     }
 
@@ -699,7 +700,7 @@ class ContactsActivity : Activity() {
         e.setTextColor(P.text)
         e.textSize = 16f
         e.setPadding(dp(14), 0, dp(14), 0)
-        e.rounded(P.raised, 12)
+        e.rounded(P.sunken, 12)
         return e
     }
 
@@ -732,7 +733,7 @@ class ContactsActivity : Activity() {
             codeChip.textSize = 18f
             codeChip.gravity = Gravity.CENTER
             codeChip.setTextColor(P.signal)
-            codeChip.rounded(P.raised, 12)
+            codeChip.rounded(P.sunken, 12)
             row.addView(codeChip, LinearLayout.LayoutParams(dp(48), dp(48)))
 
             val texts = LinearLayout(this)
