@@ -180,6 +180,7 @@ class Pager(ctx: Context) : HorizontalScrollView(ctx) {
     var page = 0
         private set
     var onPageChanged: ((Int) -> Unit)? = null
+    private var flung = false
 
     init {
         isHorizontalScrollBarEnabled = false
@@ -212,29 +213,39 @@ class Pager(ctx: Context) : HorizontalScrollView(ctx) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
+    /** Replaces the free-scrolling fling with a one-page-at-a-time glide. */
+    override fun fling(velocityX: Int) {
+        flung = true
+        val target = when {
+            velocityX > 500 -> page + 1
+            velocityX < -500 -> page - 1
+            else -> nearest()
+        }
+        goTo(target)
+    }
+
     override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN) flung = false
         val handled = super.onTouchEvent(ev)
         if (ev.actionMasked == MotionEvent.ACTION_UP ||
             ev.actionMasked == MotionEvent.ACTION_CANCEL
-        ) snap()
+        ) {
+            if (!flung) goTo(nearest())
+        }
         return handled
     }
 
-    fun goTo(index: Int) {
+    private fun nearest(): Int {
         val w = width
-        val target = index.coerceIn(0, (row.childCount - 1).coerceAtLeast(0))
-        if (w > 0) smoothScrollTo(target * w, 0)
-        if (target != page) {
-            page = target
-            onPageChanged?.invoke(page)
-        }
+        if (w == 0) return page
+        return ((scrollX + w / 2) / w).coerceIn(0, lastPage())
     }
 
-    private fun snap() {
-        val w = width
-        if (w == 0 || row.childCount == 0) return
-        val target = ((scrollX + w / 2) / w).coerceIn(0, row.childCount - 1)
-        smoothScrollTo(target * w, 0)
+    private fun lastPage(): Int = (row.childCount - 1).coerceAtLeast(0)
+
+    fun goTo(index: Int) {
+        val target = index.coerceIn(0, lastPage())
+        if (width > 0) smoothScrollTo(target * width, 0)
         if (target != page) {
             page = target
             onPageChanged?.invoke(page)
